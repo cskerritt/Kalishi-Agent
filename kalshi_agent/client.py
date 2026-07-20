@@ -146,9 +146,14 @@ class KalshiClient:
         price_cents: int | None = None,
         client_order_id: str | None = None,
         expiration_ts: int | None = None,
-        buy_max_cost_cents: int | None = None,
     ) -> dict[str, Any]:
-        """Place an order. Prices are integer cents in [1, 99]."""
+        """Place an order via the v2 endpoint. Prices are integer cents in [1, 99].
+
+        The v2 API expresses every order on the YES leg as a bid or ask, so
+        yes/no + buy/sell are mapped: NO orders become the mirrored YES order
+        at (100 - price). "market" orders are sent as immediate-or-cancel at
+        the most aggressive price.
+        """
         if side not in ("yes", "no"):
             raise ValueError("side must be 'yes' or 'no'")
         if action not in ("buy", "sell"):
@@ -159,21 +164,28 @@ class KalshiClient:
             if price_cents is None or not (1 <= price_cents <= 99):
                 raise ValueError("limit orders require price_cents in [1, 99]")
 
+        # Map to the YES leg: buying YES / selling NO takes the bid side;
+        # selling YES / buying NO takes the ask side. NO prices mirror to 100-p.
+        v2_side = "bid" if (side == "yes") == (action == "buy") else "ask"
+        if order_type == "market":
+            yes_price_cents = 99 if v2_side == "bid" else 1
+            time_in_force = "immediate_or_cancel"
+        else:
+            yes_price_cents = price_cents if side == "yes" else 100 - price_cents
+            time_in_force = "good_till_canceled"
+
         body: dict[str, Any] = {
             "ticker": ticker,
             "client_order_id": client_order_id or str(uuid.uuid4()),
-            "side": side,
-            "action": action,
-            "count": count,
-            "type": order_type,
+            "side": v2_side,
+            "count": str(count),
+            "price": f"{yes_price_cents / 100:.2f}",
+            "time_in_force": time_in_force,
+            "self_trade_prevention_type": "taker_at_cross",
         }
-        if order_type == "limit" and price_cents is not None:
-            body["yes_price" if side == "yes" else "no_price"] = price_cents
         if expiration_ts is not None:
-            body["expiration_ts"] = expiration_ts
-        if buy_max_cost_cents is not None:
-            body["buy_max_cost"] = buy_max_cost_cents
-        return self._request("POST", "/portfolio/orders", json_body=body)
+            body["expiration_time"] = expiration_ts
+        return self._request("POST", "/portfolio/events/orders", json_body=body)
 
     def cancel_order(self, order_id: str) -> dict[str, Any]:
-        return self._request("DELETE", f"/portfolio/orders/{order_id}")
+        return self._request("DELETE", f"/portfolio/events/orders/{order_id}")
