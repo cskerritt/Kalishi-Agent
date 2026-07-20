@@ -93,6 +93,10 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--min-volume", type=int, default=500, help="Minimum traded volume")
     p.add_argument("--out", default=None, help="Snapshot file (default .scan.json)")
 
+    p = sub.add_parser("weather", help="Scan temperature markets vs NWS forecasts for edges")
+    p.add_argument("--min-edge", type=int, default=8, help="Minimum edge in cents")
+    p.add_argument("--horizon", type=int, default=2, help="Max days ahead")
+
     p = sub.add_parser("execute", help="Place numbered picks from a picks file")
     p.add_argument("numbers", type=int, nargs="+", help="Pick numbers to place")
     p.add_argument("--picks", default=None, help="Picks file (default picks.json)")
@@ -168,6 +172,18 @@ def main(argv: list[str] | None = None) -> None:
                     f"{(m.get('title') or '')[:50]}"
                 )
             print(f"\n{len(snapshot)} candidate(s) written to {out}")
+        elif args.command == "weather":
+            from .weather import scan_weather
+            edges = scan_weather(min_edge_cents=args.min_edge, horizon_days=args.horizon)
+            if not edges:
+                print("No weather edges >= threshold right now.")
+            for e in edges:
+                print(
+                    f"{e.ticker:32} {e.date}  NWS {e.forecast_high:.0f}F ({e.short[:20]})  "
+                    f"strike '{e.strike}'  market yes {e.yes_bid}/{e.yes_ask}c  "
+                    f"fair {e.fair_cents}c  -> BUY {e.side.upper()} @ {e.price_cents}c "
+                    f"(edge {e.edge_cents}c)"
+                )
         elif args.command == "execute":
             from .recommend import PICKS_FILE, execute_picks
             execute_picks(args.numbers, picks_file=args.picks or PICKS_FILE, live=args.live)
