@@ -94,8 +94,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--out", default=None, help="Snapshot file (default .scan.json)")
 
     p = sub.add_parser("weather", help="Scan temperature markets vs NWS forecasts for edges")
-    p.add_argument("--min-edge", type=int, default=8, help="Minimum edge in cents")
-    p.add_argument("--horizon", type=int, default=2, help="Max days ahead")
+    p.add_argument("--min-edge", type=int, default=8, help="Minimum NET edge (after fees) in cents")
+    p.add_argument("--horizon", type=int, default=7, help="Max days ahead (NWS gives 7)")
 
     p = sub.add_parser("execute", help="Place numbered picks from a picks file")
     p.add_argument("numbers", type=int, nargs="+", help="Pick numbers to place")
@@ -179,10 +179,11 @@ def main(argv: list[str] | None = None) -> None:
                 print("No weather edges >= threshold right now.")
             for e in edges:
                 print(
-                    f"{e.ticker:32} {e.date}  NWS {e.forecast_high:.0f}F ({e.short[:20]})  "
-                    f"strike '{e.strike}'  market yes {e.yes_bid}/{e.yes_ask}c  "
-                    f"fair {e.fair_cents}c  -> BUY {e.side.upper()} @ {e.price_cents}c "
-                    f"(edge {e.edge_cents}c)"
+                    f"{e.ticker:32} {e.date} ({e.days_to_resolution}d)  "
+                    f"NWS {e.forecast_high:.0f}F ({e.short[:18]})  strike '{e.strike}'  "
+                    f"yes {e.yes_bid}/{e.yes_ask}c fair {e.fair_cents}c  "
+                    f"-> BUY {e.side.upper()} @ {e.price_cents}c  "
+                    f"net edge {e.net_edge_cents}c ({e.edge_per_day}c/day)"
                 )
         elif args.command == "execute":
             from .recommend import PICKS_FILE, execute_picks

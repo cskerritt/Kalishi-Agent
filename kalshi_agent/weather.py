@@ -41,8 +41,14 @@ STATIONS = {
 }
 
 # Forecast-error sigma (deg F) by forecast horizon in days.
-SIGMA_BY_HORIZON = {0: 2.0, 1: 2.8, 2: 3.5}
-DEFAULT_SIGMA = 4.5
+SIGMA_BY_HORIZON = {0: 2.0, 1: 2.8, 2: 3.5, 3: 4.2, 4: 4.8, 5: 5.4, 6: 5.9}
+DEFAULT_SIGMA = 6.5
+
+
+def taker_fee_cents(price_cents: int, count: int = 1) -> float:
+    """Kalshi taker fee: 7% of price * (1 - price), per contract, in cents."""
+    p = price_cents / 100
+    return math.ceil(7 * p * (1 - p) * count * 100) / 100
 
 _UA = {"User-Agent": "kalshi-agent-weather (github.com/cskerritt/Kalishi-Agent)"}
 
@@ -119,9 +125,12 @@ class WeatherEdge:
     side: str          # "yes" | "no"
     price_cents: int   # ask you'd pay
     edge_cents: int
+    net_edge_cents: float = 0.0   # edge minus taker fee
+    days_to_resolution: int = 0
+    edge_per_day: float = 0.0     # net edge / days locked
 
 
-def scan_weather(min_edge_cents: int = 8, horizon_days: int = 2) -> list[WeatherEdge]:
+def scan_weather(min_edge_cents: int = 8, horizon_days: int = 7) -> list[WeatherEdge]:
     client = KalshiClient(Config(env="prod"))
     forecasts: dict[str, dict[str, dict[str, Any]]] = {}
     edges: list[WeatherEdge] = []
@@ -166,12 +175,18 @@ def scan_weather(min_edge_cents: int = 8, horizon_days: int = 2) -> list[Weather
                     best = cand
             if best:
                 strike = m.get("yes_sub_title") or m.get("subtitle") or ""
+                net = best[2] - taker_fee_cents(best[1])
+                if net < min_edge_cents:
+                    continue
+                days = max(horizon, 1)
                 edges.append(WeatherEdge(
                     ticker=m["ticker"], series=series, date=date,
                     forecast_high=fc["temp_f"], short=fc["short"], strike=strike,
                     yes_bid=m.get("yes_bid"), yes_ask=yes_ask, fair_cents=fair_c,
                     side=best[0], price_cents=best[1], edge_cents=best[2],
+                    net_edge_cents=round(net, 2), days_to_resolution=days,
+                    edge_per_day=round(net / days, 2),
                 ))
 
-    edges.sort(key=lambda e: -e.edge_cents)
+    edges.sort(key=lambda e: -e.edge_per_day)
     return edges
