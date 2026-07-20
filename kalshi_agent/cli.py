@@ -84,6 +84,20 @@ def main(argv: list[str] | None = None) -> None:
     p = sub.add_parser("analyze", help="Ask Claude to analyze a market (no order placed)")
     p.add_argument("ticker")
 
+    p = sub.add_parser(
+        "scan", help="Snapshot liquid markets closing soon (prod prices) for review"
+    )
+    p.add_argument("--hours", type=float, default=36, help="Only markets closing within N hours")
+    p.add_argument("--limit", type=int, default=25, help="Max candidates in the snapshot")
+    p.add_argument("--series", default=None, help="Series ticker filter")
+    p.add_argument("--min-volume", type=int, default=500, help="Minimum traded volume")
+    p.add_argument("--out", default=None, help="Snapshot file (default .scan.json)")
+
+    p = sub.add_parser("execute", help="Place numbered picks from a picks file")
+    p.add_argument("numbers", type=int, nargs="+", help="Pick numbers to place")
+    p.add_argument("--picks", default=None, help="Picks file (default picks.json)")
+    p.add_argument("--live", action="store_true", help="Actually send the orders")
+
     p = sub.add_parser("run", help="Automated analyze-and-trade loop")
     p.add_argument("--series", default=None, help="Series ticker to scan")
     p.add_argument("--tickers", default=None, help="Comma-separated market tickers")
@@ -140,6 +154,23 @@ def main(argv: list[str] | None = None) -> None:
                 "recommendation": analysis.recommendation,
                 "reasoning": analysis.reasoning,
             })
+        elif args.command == "scan":
+            from .recommend import SCAN_FILE, scan_markets
+            out = args.out or SCAN_FILE
+            snapshot = scan_markets(
+                hours=args.hours, limit=args.limit, series=args.series,
+                min_volume=args.min_volume, out=out,
+            )
+            for i, m in enumerate(snapshot, 1):
+                print(
+                    f"{i:>3}. {m['ticker']:45s} yes {m['yes_bid']}/{m['yes_ask']}c  "
+                    f"vol {m['volume']:>8}  closes {m['close_time']}  "
+                    f"{(m.get('title') or '')[:50]}"
+                )
+            print(f"\n{len(snapshot)} candidate(s) written to {out}")
+        elif args.command == "execute":
+            from .recommend import PICKS_FILE, execute_picks
+            execute_picks(args.numbers, picks_file=args.picks or PICKS_FILE, live=args.live)
         elif args.command == "run":
             from .agent import TradingAgent
             agent = TradingAgent(live=args.live, default_count=args.count)

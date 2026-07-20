@@ -18,6 +18,37 @@ class KalshiAPIError(Exception):
         super().__init__(f"Kalshi API error {status_code}: {body}")
 
 
+_DOLLAR_FIELDS = {
+    "yes_bid_dollars": "yes_bid",
+    "yes_ask_dollars": "yes_ask",
+    "no_bid_dollars": "no_bid",
+    "no_ask_dollars": "no_ask",
+    "last_price_dollars": "last_price",
+    "liquidity_dollars": "liquidity",
+}
+_FP_FIELDS = {
+    "volume_fp": "volume",
+    "volume_24h_fp": "volume_24h",
+    "open_interest_fp": "open_interest",
+}
+
+
+def normalize_market(m: dict[str, Any]) -> dict[str, Any]:
+    """Backfill legacy integer-cent fields from the newer *_dollars / *_fp strings.
+
+    The API now returns prices as fixed-point dollar strings ("0.4500") and
+    counts as fixed-point strings ("82.00"); the rest of the codebase works in
+    integer cents and counts.
+    """
+    for src, dst in _DOLLAR_FIELDS.items():
+        if m.get(dst) is None and m.get(src) is not None:
+            m[dst] = round(float(m[src]) * 100)
+    for src, dst in _FP_FIELDS.items():
+        if m.get(dst) is None and m.get(src) is not None:
+            m[dst] = int(float(m[src]))
+    return m
+
+
 class KalshiClient:
     def __init__(self, config: Config | None = None):
         self.config = config or Config()
@@ -86,8 +117,14 @@ class KalshiClient:
 
     def get_markets(self, status: str | None = None, event_ticker: str | None = None,
                     series_ticker: str | None = None, tickers: str | None = None,
-                    limit: int = 100, cursor: str | None = None) -> dict[str, Any]:
+                    limit: int = 100, cursor: str | None = None,
+                    min_close_ts: int | None = None,
+                    max_close_ts: int | None = None) -> dict[str, Any]:
         params: dict[str, Any] = {"limit": limit}
+        if min_close_ts is not None:
+            params["min_close_ts"] = min_close_ts
+        if max_close_ts is not None:
+            params["max_close_ts"] = max_close_ts
         if status:
             params["status"] = status
         if event_ticker:
@@ -98,10 +135,16 @@ class KalshiClient:
             params["tickers"] = tickers
         if cursor:
             params["cursor"] = cursor
-        return self._request("GET", "/markets", params=params, signed=False)
+        data = self._request("GET", "/markets", params=params, signed=False)
+        for m in data.get("markets", []):
+            normalize_market(m)
+        return data
 
     def get_market(self, ticker: str) -> dict[str, Any]:
-        return self._request("GET", f"/markets/{ticker}", signed=False)
+        data = self._request("GET", f"/markets/{ticker}", signed=False)
+        if "market" in data:
+            normalize_market(data["market"])
+        return data
 
     def get_orderbook(self, ticker: str, depth: int = 10) -> dict[str, Any]:
         return self._request(
