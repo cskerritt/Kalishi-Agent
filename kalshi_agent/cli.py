@@ -102,6 +102,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--picks", default=None, help="Picks file (default picks.json)")
     p.add_argument("--live", action="store_true", help="Actually send the orders")
 
+    sub.add_parser("journal", help="Bet journal: stats + entries")
+    sub.add_parser("settle", help="Update journal entries from settled markets")
+
     p = sub.add_parser("run", help="Automated analyze-and-trade loop")
     p.add_argument("--series", default=None, help="Series ticker to scan")
     p.add_argument("--tickers", default=None, help="Comma-separated market tickers")
@@ -188,6 +191,29 @@ def main(argv: list[str] | None = None) -> None:
         elif args.command == "execute":
             from .recommend import PICKS_FILE, execute_picks
             execute_picks(args.numbers, picks_file=args.picks or PICKS_FILE, live=args.live)
+        elif args.command == "journal":
+            from .journal import _load, summarize
+            _print(summarize())
+            for e in _load():
+                pnl = f"{e['pnl_cents'] / 100:+.2f}" if e["pnl_cents"] is not None else "-"
+                print(
+                    f"{e['ticker']:42} {e['side']:>3} x{e['count']:<4} @ {e['price_cents']}c  "
+                    f"[{e['status']:^5}] pnl ${pnl}  ({e['conviction']})"
+                )
+        elif args.command == "settle":
+            from .journal import summarize, update_settlements
+            changed = update_settlements()
+            for e in changed:
+                print(
+                    f"{e['ticker']:42} -> {e['status'].upper()} "
+                    f"(result={e['settled_result']}, filled={e['fill_count']}, "
+                    f"pnl ${(e['pnl_cents'] or 0) / 100:+.2f})"
+                )
+            if not changed:
+                print("No newly settled entries.")
+            s = summarize()
+            if s["awaiting_postmortem"]:
+                print(f"\nPOST-MORTEM NEEDED: {s['awaiting_postmortem']}")
         elif args.command == "run":
             from .agent import TradingAgent
             agent = TradingAgent(live=args.live, default_count=args.count)

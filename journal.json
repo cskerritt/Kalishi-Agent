@@ -1,0 +1,102 @@
+[
+  {
+    "placed_at": 1784516625,
+    "ticker": "KXHIGHLAX-26JUL20-T80",
+    "side": "no",
+    "count": 29,
+    "price_cents": 81,
+    "order_id": "66845f79-9e70-485c-b689-93f7a818c7ae",
+    "env": "demo",
+    "thesis": "Market: LAX high temp 81F+ on Jul 20, YES priced 19-21c. NWS point forecast for LAX is 75F with patchy fog/marine layer; coastal LAX rarely busts a next-day forecast by +6F in a July fog pattern. Fair NO ~93-97c vs 81c ask. Cost $23.49 (2.9% of bankroll), win pays +$5.51.",
+    "fair_cents": 95,
+    "conviction": "high",
+    "model_snapshot": {
+      "nws_forecast_f": 75,
+      "market_yes": "18/20"
+    },
+    "status": "open",
+    "fill_count": null,
+    "pnl_cents": null,
+    "postmortem": null
+  },
+  {
+    "placed_at": 1784516625,
+    "ticker": "KXMLBGAME-26JUL202005CWSTEX-TEX",
+    "side": "yes",
+    "count": 13,
+    "price_cents": 61,
+    "order_id": "df116cf5-ba08-435a-a722-499ec82e0370",
+    "env": "demo",
+    "thesis": "TEX -175 at DK = 61.4% devigged; Kalshi ask 61. ~zero EV, best-priced favorite on the board. $7.93 (1%).",
+    "fair_cents": 61,
+    "conviction": "practice",
+    "model_snapshot": {
+      "dk_line": "TEX -175",
+      "devig_fair": 61.4
+    },
+    "status": "open",
+    "fill_count": null,
+    "pnl_cents": null,
+    "postmortem": null
+  },
+  {
+    "placed_at": 1784516625,
+    "ticker": "KXMLBGAME-26JUL201940NYMMIL-NYM",
+    "side": "yes",
+    "count": 22,
+    "price_cents": 36,
+    "order_id": "6d9a82be-2ff3-4a40-9b55-ed53d29f7c66",
+    "env": "demo",
+    "thesis": "MIL -193 at DK = 63.8% devigged, so NYM fair 36.2; Kalshi ask 36. ~zero EV underdog. $7.92 (1%).",
+    "fair_cents": 36,
+    "conviction": "practice",
+    "model_snapshot": {
+      "dk_line": "MIL -193",
+      "devig_fair_nym": 36.2
+    },
+    "status": "open",
+    "fill_count": null,
+    "pnl_cents": null,
+    "postmortem": null
+  },
+  {
+    "placed_at": 1784516625,
+    "ticker": "KXLOWTSFO-26JUL20-T59",
+    "side": "yes",
+    "count": 100,
+    "price_cents": 4,
+    "order_id": "095e56fe-04e1-4d22-8cbf-2da328959edc",
+    "env": "demo",
+    "thesis": "SFO overnight low 60F+: NWS forecasts 58F low under mostly-cloudy skies (clouds hold heat); market 3-4c. Defined risk $4.00.",
+    "fair_cents": 25,
+    "conviction": "moderate-high",
+    "model_snapshot": {
+      "nws_low_f": 58,
+      "sky": "mostly cloudy"
+    },
+    "status": "open",
+    "fill_count": null,
+    "pnl_cents": null,
+    "postmortem": null
+  },
+  {
+    "placed_at": 1784516625,
+    "ticker": "KXHIGHLAX-26JUL20-B75.5",
+    "side": "yes",
+    "count": 100,
+    "price_cents": 7,
+    "order_id": "e02dfde0-5a7b-41c8-a637-455de1833679",
+    "env": "demo",
+    "thesis": "LAX high in 75-76F band: NWS point forecast exactly 75F vs crowd consensus ~77-78F; +EV under both wide and tight sigma. Defined risk $7.00.",
+    "fair_cents": 35,
+    "conviction": "moderate",
+    "model_snapshot": {
+      "nws_high_f": 75,
+      "market_implied_high": 77.5
+    },
+    "status": "open",
+    "fill_count": null,
+    "pnl_cents": null,
+    "postmortem": null
+  }
+]

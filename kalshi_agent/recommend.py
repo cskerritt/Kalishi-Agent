@@ -120,3 +120,10 @@ def execute_picks(
         risk.record_spend(intent.cost_cents)
         print(f"#{n} placed: order_id={result.get('order_id')} "
               f"filled={result.get('fill_count')} resting={result.get('remaining_count')}")
+        from .journal import record_bet
+        record_bet(
+            ticker=p["ticker"], side=p["side"], count=p["count"],
+            price_cents=p["price_cents"], order_id=result.get("order_id", ""),
+            env=config.env, thesis=p.get("rationale", ""),
+            fair_cents=p.get("fair_cents"), conviction=p.get("conviction", ""),
+        )
