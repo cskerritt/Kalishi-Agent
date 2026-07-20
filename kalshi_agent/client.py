@@ -21,11 +21,16 @@ class KalshiAPIError(Exception):
 class KalshiClient:
     def __init__(self, config: Config | None = None):
         self.config = config or Config()
-        self.config.validate_credentials()
-        self._private_key = load_private_key(self.config.private_key_path)
+        self._private_key = None
         self._session = requests.Session()
 
     # ------------------------------------------------------------------ core
+
+    def _ensure_key(self):
+        if self._private_key is None:
+            self.config.validate_credentials()
+            self._private_key = load_private_key(self.config.private_key_path)
+        return self._private_key
 
     def _request(
         self,
@@ -33,12 +38,16 @@ class KalshiClient:
         path: str,
         params: dict[str, Any] | None = None,
         json_body: dict[str, Any] | None = None,
+        signed: bool = True,
     ) -> dict[str, Any]:
         full_path = API_PREFIX + path
-        headers = build_auth_headers(
-            self.config.api_key_id, self._private_key, method, full_path
-        )
-        headers["Content-Type"] = "application/json"
+        headers = {"Content-Type": "application/json"}
+        if signed:
+            headers.update(
+                build_auth_headers(
+                    self.config.api_key_id, self._ensure_key(), method, full_path
+                )
+            )
         resp = self._session.request(
             method,
             self.config.base_url + full_path,
@@ -60,7 +69,7 @@ class KalshiClient:
     # -------------------------------------------------------------- exchange
 
     def exchange_status(self) -> dict[str, Any]:
-        return self._request("GET", "/exchange/status")
+        return self._request("GET", "/exchange/status", signed=False)
 
     # --------------------------------------------------------------- markets
 
@@ -73,7 +82,7 @@ class KalshiClient:
             params["series_ticker"] = series_ticker
         if cursor:
             params["cursor"] = cursor
-        return self._request("GET", "/events", params=params)
+        return self._request("GET", "/events", params=params, signed=False)
 
     def get_markets(self, status: str | None = None, event_ticker: str | None = None,
                     series_ticker: str | None = None, tickers: str | None = None,
@@ -89,13 +98,15 @@ class KalshiClient:
             params["tickers"] = tickers
         if cursor:
             params["cursor"] = cursor
-        return self._request("GET", "/markets", params=params)
+        return self._request("GET", "/markets", params=params, signed=False)
 
     def get_market(self, ticker: str) -> dict[str, Any]:
-        return self._request("GET", f"/markets/{ticker}")
+        return self._request("GET", f"/markets/{ticker}", signed=False)
 
     def get_orderbook(self, ticker: str, depth: int = 10) -> dict[str, Any]:
-        return self._request("GET", f"/markets/{ticker}/orderbook", params={"depth": depth})
+        return self._request(
+            "GET", f"/markets/{ticker}/orderbook", params={"depth": depth}, signed=False
+        )
 
     # ------------------------------------------------------------- portfolio
 
