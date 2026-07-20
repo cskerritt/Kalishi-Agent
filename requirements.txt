@@ -1,0 +1,5 @@
+requests>=2.31
+cryptography>=42.0
+python-dotenv>=1.0
+anthropic>=0.100.0
+pytest>=8.0
