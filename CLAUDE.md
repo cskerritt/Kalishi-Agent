@@ -88,3 +88,6 @@ MM prices correlated legs as independent. Demo combo books are empty.
   lows (was comparing against daytime highs — caught before any bet).
 - 2026-07-19: journal + settle commands; every live pick auto-journaled
   with thesis and model snapshot; losses require post-mortems.
+- 2026-07-20: PROD LIVE — original key's pem recovered from
+  ~/Downloads/App.txt, auth verified, $814 real balance; 1c canary order
+  executed + journaled. Demo positions remain journaled as env=demo.
