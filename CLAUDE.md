@@ -68,6 +68,19 @@ tradable (RESEARCH.md).
   station map lives in `weather.py` STATIONS; verify `rules_primary` before
   adding a series.
 
+## Combo (parlay) bets
+
+Supported via `client.create_combo_market(legs)` — POST the chosen legs to a
+multivariate event collection, Kalshi mints/returns a combo market ticker,
+then trade it with a normal order. Verified end-to-end on demo 2026-07-19
+(create -> resting order -> cancel). Collections: KXMVESPORTSMULTIGAMEEXTENDED-R
+(cross-game sports), KXMVECROSSCATEGORY-R (mixed categories),
+KXMVENBASINGLEGAME-* (same-game). Caps: 10 rate tokens/creation, 5000/week.
+EV caution: on prod these are quoted by Kalshi's parlay market maker with a
+wider effective spread than the legs; a combo is only worth it when several
+legs are independently +EV (edges multiply, but so does variance) or when the
+MM prices correlated legs as independent. Demo combo books are empty.
+
 ## Model changelog
 
 - 2026-07-19: v1 — normal-sigma weather model vs NWS; taker-fee netting;

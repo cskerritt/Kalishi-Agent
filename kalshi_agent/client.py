@@ -237,3 +237,24 @@ class KalshiClient:
 
     def cancel_order(self, order_id: str) -> dict[str, Any]:
         return self._request("DELETE", f"/portfolio/events/orders/{order_id}")
+
+    # ------------------------------------------------------------- combos
+
+    def create_combo_market(
+        self,
+        legs: list[dict[str, str]],
+        collection_ticker: str = "KXMVESPORTSMULTIGAMEEXTENDED-R",
+    ) -> dict[str, Any]:
+        """Mint (or fetch) the combo market for the given legs, then trade it
+        with create_order like any market.
+
+        Each leg: {"market_ticker": ..., "event_ticker": ..., "side": "yes"|"no"}.
+        Authenticated; costs 10 rate tokens, capped at 5000 creations/week.
+        """
+        r = self._request(
+            "POST", f"/multivariate_event_collections/{collection_ticker}",
+            json_body={"selected_markets": legs, "with_market_payload": True},
+        )
+        if r.get("market"):
+            normalize_market(r["market"])
+        return r
