@@ -4,6 +4,35 @@ How to research each Kalshi market category, what data actually moves each
 market, and where a small bankroll can find real edge. Written 2026-07-19
 from a full-exchange survey (see `.survey.json` / `.events_categories.json`).
 
+## Full-exchange survey results (2026-07-19)
+
+336,409 open markets across 2,854 series — but **80% (270k) are
+auto-generated parlay combos with zero volume**. Real activity, by 24h
+contract volume:
+
+| Category | Series | Markets | 24h volume | Share of active flow |
+|---|---|---|---|---|
+| Sports | 689 | 29,625 | 29.1M | ~65% |
+| Entertainment | 294 | 6,874 | 2.35M | 5% |
+| Climate & Weather | 77 | 883 | 2.25M | 5% |
+| Elections | 618 | 11,434 | 2.18M | 5% (454M lifetime — parked capital) |
+| Mentions | 29 | 622 | 1.28M | 3% |
+| Crypto | 60 | 3,506 | 1.25M | 3% |
+| Politics | 394 | 1,764 | 1.24M | 3% |
+| Economics | 228 | 2,849 | 0.92M | 2% |
+| Sci-Tech | 103 | 742 | 0.46M | 1% |
+
+Surprises worth knowing:
+- The biggest daily sports series are NOT major-league winners: NBA
+  free-agency destination (8M/day), NASCAR race winners (5.7M/day), and
+  **minor-league tennis** (ITF + Challenger: 6.7M/day combined). Heavy
+  retail gambling flow on matches where sportsbook coverage is thin —
+  worth testing Kalshi vs Pinnacle on ITF matches for real dislocations.
+- KXHIGHLAX alone trades 806k contracts/day — weather liquidity is real,
+  fills at our size are never a problem.
+- Rotten Tomatoes scores (KXRT) do 1.2M/day — Entertainment's biggest
+  single series; predictable from pre-release critic scores.
+
 Edge ratings are for a retail-scale bankroll (~$800) with public data:
 - **A** — systematic, automatable edge worth building tooling for
 - **B** — situational edge; needs judgment per trade
