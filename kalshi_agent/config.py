@@ -34,6 +34,16 @@ class Config:
     )
     min_edge_cents: int = field(default_factory=lambda: int(os.environ.get("MIN_EDGE_CENTS", "10")))
 
+    def __post_init__(self) -> None:
+        # Env-scoped credentials (KALSHI_DEMO_API_KEY_ID / KALSHI_PROD_API_KEY_ID,
+        # same for *_PRIVATE_KEY_PATH) override the generic ones, so demo and prod
+        # keys can coexist in .env and KALSHI_ENV picks between them.
+        prefix = f"KALSHI_{self.env.upper()}_"
+        self.api_key_id = os.environ.get(prefix + "API_KEY_ID", self.api_key_id)
+        self.private_key_path = os.environ.get(
+            prefix + "PRIVATE_KEY_PATH", self.private_key_path
+        )
+
     @property
     def base_url(self) -> str:
         try:
