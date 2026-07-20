@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import uuid
 from typing import Any
 
@@ -79,14 +80,18 @@ class KalshiClient:
                     self.config.api_key_id, self._ensure_key(), method, full_path
                 )
             )
-        resp = self._session.request(
-            method,
-            self.config.base_url + full_path,
-            params=params,
-            json=json_body,
-            headers=headers,
-            timeout=30,
-        )
+        for attempt in range(4):
+            resp = self._session.request(
+                method,
+                self.config.base_url + full_path,
+                params=params,
+                json=json_body,
+                headers=headers,
+                timeout=30,
+            )
+            if resp.status_code != 429:
+                break
+            time.sleep(1.5 * (attempt + 1))
         if resp.status_code >= 400:
             try:
                 body = resp.json()
