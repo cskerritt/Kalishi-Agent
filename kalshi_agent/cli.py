@@ -93,6 +93,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--min-volume", type=int, default=500, help="Minimum traded volume")
     p.add_argument("--out", default=None, help="Snapshot file (default .scan.json)")
 
+    p = sub.add_parser("edges", help="Unified edge sweep across all modeled categories")
+    p.add_argument("--min-edge", type=int, default=8, help="Minimum NET edge in cents")
+
     p = sub.add_parser("weather", help="Scan temperature markets vs NWS forecasts for edges")
     p.add_argument("--min-edge", type=int, default=8, help="Minimum NET edge (after fees) in cents")
     p.add_argument("--horizon", type=int, default=7, help="Max days ahead (NWS gives 7)")
@@ -175,6 +178,17 @@ def main(argv: list[str] | None = None) -> None:
                     f"{(m.get('title') or '')[:50]}"
                 )
             print(f"\n{len(snapshot)} candidate(s) written to {out}")
+        elif args.command == "edges":
+            from .edges import scan_edges
+            found = scan_edges(min_edge_cents=args.min_edge)
+            if not found:
+                print("No edges >= threshold across modeled categories.")
+            for e in found:
+                print(
+                    f"[{e.category:7}] {e.ticker:34} {e.date} ({e.days}d)  "
+                    f"BUY {e.side.upper()} @ {e.price_cents}c fair {e.fair_cents}c  "
+                    f"net {e.net_edge_cents}c ({e.edge_per_day}c/day)  {e.thesis[:60]}"
+                )
         elif args.command == "weather":
             from .weather import scan_weather
             edges = scan_weather(min_edge_cents=args.min_edge, horizon_days=args.horizon)

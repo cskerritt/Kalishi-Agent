@@ -14,7 +14,12 @@
    real state, not an old one.
 4. **Feasible-edge policy** (see RESEARCH.md): net edge ≥ 8c after taker fee,
    ≥ 2c per day of capital lockup, sigma-robust, explainable counterparty.
-5. **Bankroll $800** (prod, when unblocked): high conviction ≈ 3% ($24),
+5. **Profit target watch**: Chris wants to be told when total prod equity
+   (cash + portfolio) reaches **$1,503.00** = +$689 over the $814.00
+   go-live baseline (2026-07-20). Run `profit_check.py` whenever running
+   settle/journal and alert him the moment it trips. Adjust BASELINE in
+   profit_check.py if he deposits or withdraws.
+6. **Bankroll $800** (prod): high conviction ≈ 3% ($24),
    moderate ≈ 1% ($8), practice ≈ 1%. Hard caps in `.env`: $25/order,
    $80/day. Dry-run is the default everywhere; `--live` is explicit.
 
@@ -98,3 +103,9 @@ Combo EV bar: combined leg edge must clear ~5c MM vig + taker fee.
   executed + journaled. Demo positions remain journaled as env=demo.
 - 2026-07-20: risk fix — daily spend now tracked per env (demo orders were
   eating the prod $80/day budget and spuriously blocked a real pick).
+- 2026-07-20: unified `edges` command — weather + sports devig in one
+  fee-netted, edge-per-day-ranked sweep. GOTCHA caught before any bet:
+  ESPN's odds `details` is a MONEYLINE for MLB but a POINT SPREAD for WNBA
+  ("MIN -10.5"); parsing it as ML inverted favorites and produced fake 70c
+  edges. Fix: abs(line) < 100 => spread => normal-model win prob
+  (sigma 10.5 WNBA). Any new league needs its details format verified first.
