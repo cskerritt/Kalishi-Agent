@@ -91,3 +91,5 @@ MM prices correlated legs as independent. Demo combo books are empty.
 - 2026-07-20: PROD LIVE — original key's pem recovered from
   ~/Downloads/App.txt, auth verified, $814 real balance; 1c canary order
   executed + journaled. Demo positions remain journaled as env=demo.
+- 2026-07-20: risk fix — daily spend now tracked per env (demo orders were
+  eating the prod $80/day budget and spuriously blocked a real pick).
