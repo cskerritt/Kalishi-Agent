@@ -113,6 +113,18 @@ Combo EV bar: combined leg edge must clear ~5c MM vig + taker fee.
 
 ## Model changelog
 
+- 2026-07-20 AM: **obs-gating rule added after first real loss** (LAX 81+
+  NO, -$10.44 cut early from -$23.78 max). A point forecast is stale the
+  moment live observations contradict its mechanism: LAX was 68F and CLEAR
+  pre-dawn (marine layer never formed) while the forecast still said 75F,
+  and the market repriced 81+ from 19c to 53c on obs. RULE: before any
+  weather bet, pull the station's latest observation
+  (api.weather.gov/stations/K{XXX}/observations/latest) and check
+  consistency with the forecast mechanism (overnight temp + sky cover).
+  Obs-gates applied this morning killed a PHX cool-side add (91F pre-dawn
+  => 106F+ day likely) and an NYC add (66F morning leans cool). TODO:
+  automate the obs-gate into scan_weather.
+
 - 2026-07-19: v1 — normal-sigma weather model vs NWS; taker-fee netting;
   edge-per-day scoring; 7-day horizon; low-temp series fixed to overnight
   lows (was comparing against daytime highs — caught before any bet).
