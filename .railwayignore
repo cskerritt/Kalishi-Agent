@@ -1,0 +1,17 @@
+.env
+*.pem
+*.key
+.venv/
+venv/
+__pycache__/
+.git/
+.pytest_cache/
+.daily_spend.json
+picks.json
+journal.json
+.scan.json
+.survey.json
+.events_categories.json
+survey_all.py
+survey_events.py
+tests/

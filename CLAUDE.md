@@ -73,6 +73,26 @@ tradable (RESEARCH.md).
   station map lives in `weather.py` STATIONS; verify `rules_primary` before
   adding a series.
 
+## Railway deployment (continuous operation)
+
+Project **kalshi-agent** (85d3a357-6e80-4d3d-bf0a-7ac0f9b7ccf3), service
+**kalshi-agent**, deployed from this repo via `railway up` (respects
+.railwayignore — secrets and local state are NEVER uploaded). Runs
+`scheduler.py`: 08:11 ET weather scan, 14:07 ET sports drift, 20:19 ET
+settle, Mon 09:04 ET profit check vs +$689 target. Push notifications via
+ntfy.sh topic in NTFY_TOPIC var (also in local `.ntfy_topic`) — Chris
+subscribes in the ntfy app.
+
+- State lives on the /data volume (journal.json, .daily_spend.json) —
+  `railway ssh "cat /data/journal.json"` to read it when resuming locally;
+  local and Railway journals are SEPARATE — reconcile when switching.
+- **AUTO_TRADE=false by default** (notify-only). `railway variables --set
+  AUTO_TRADE=true` enables unattended placement: cheap weather tails +
+  devig sports only, $8 stakes, max 3/day, never adds to a position,
+  RiskManager caps enforced. Flip only on Chris's say-so.
+- KALSHI_PRIVATE_KEY_PEM env var holds the signing key (config.py writes
+  it to a temp file at boot). Redeploy: `railway up --detach` from repo.
+
 ## Combo (parlay) bets
 
 Supported via `client.create_combo_market(legs)` — POST the chosen legs to a
