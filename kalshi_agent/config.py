@@ -43,6 +43,21 @@ class Config:
         self.private_key_path = os.environ.get(
             prefix + "PRIVATE_KEY_PATH", self.private_key_path
         )
+        # Deployment-friendly: the key PEM can be passed inline via env
+        # (KALSHI_PRIVATE_KEY_PEM) instead of a file on disk.
+        pem = os.environ.get(prefix + "PRIVATE_KEY_PEM") or os.environ.get(
+            "KALSHI_PRIVATE_KEY_PEM"
+        )
+        if pem and not os.path.exists(self.private_key_path):
+            import tempfile
+
+            f = tempfile.NamedTemporaryFile(
+                mode="w", suffix=".pem", delete=False, prefix="kalshi-key-"
+            )
+            f.write(pem)
+            f.close()
+            os.chmod(f.name, 0o600)
+            self.private_key_path = f.name
 
     @property
     def base_url(self) -> str:

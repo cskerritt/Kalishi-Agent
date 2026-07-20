@@ -12,7 +12,7 @@ from typing import Any
 
 from .client import KalshiAPIError, KalshiClient
 
-JOURNAL_FILE = "journal.json"
+JOURNAL_FILE = os.path.join(os.environ.get("KALSHI_DATA_DIR", "."), "journal.json")
 
 
 def _load(path: str = JOURNAL_FILE) -> list[dict[str, Any]]:

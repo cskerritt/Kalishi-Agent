@@ -9,7 +9,10 @@ from dataclasses import dataclass
 
 from .config import Config
 
-_SPEND_FILE = os.path.join(os.path.dirname(__file__), "..", ".daily_spend.json")
+_DATA_DIR = os.environ.get(
+    "KALSHI_DATA_DIR", os.path.join(os.path.dirname(__file__), "..")
+)
+_SPEND_FILE = os.path.join(_DATA_DIR, ".daily_spend.json")
 
 
 @dataclass
