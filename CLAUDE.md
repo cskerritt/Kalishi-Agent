@@ -80,6 +80,11 @@ EV caution: on prod these are quoted by Kalshi's parlay market maker with a
 wider effective spread than the legs; a combo is only worth it when several
 legs are independently +EV (edges multiply, but so does variance) or when the
 MM prices correlated legs as independent. Demo combo books are empty.
+Prod flow (verified 2026-07-20): mint combo -> book is empty -> POST
+/communications/rfqs {market_ticker, contracts} -> MM posts a real quote
+within seconds (2-leg MLB test: ask 40c vs 35.4c independent-multiplication
+fair = ~4.6c/13% vig). Cancel RFQ: DELETE /communications/rfqs/{id}.
+Combo EV bar: combined leg edge must clear ~5c MM vig + taker fee.
 
 ## Model changelog
 
