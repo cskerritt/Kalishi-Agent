@@ -73,7 +73,15 @@ tradable (RESEARCH.md).
   station map lives in `weather.py` STATIONS; verify `rules_primary` before
   adding a series.
 
-## Railway deployment (continuous operation)
+## OPERATING MODE: PASSIVE (Chris, 2026-07-20 ~9am ET)
+
+No active agent: all scheduled jobs cancelled, Railway deployment taken
+DOWN (service config/vars/volume preserved — `railway up` revives it).
+Open weather positions ride to settlement untouched. When Chris asks how
+it went: run `settle`, write post-mortems for losses, report the outcome.
+Do NOT re-arm schedulers or place new bets without Chris asking.
+
+## Railway deployment (continuous operation — currently DOWN, see above)
 
 Project **kalshi-agent** (85d3a357-6e80-4d3d-bf0a-7ac0f9b7ccf3), service
 **kalshi-agent**, deployed from this repo via `railway up` (respects
