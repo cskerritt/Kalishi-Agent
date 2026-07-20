@@ -45,21 +45,26 @@ class RiskManager:
         return time.strftime("%Y-%m-%d")
 
     def _load_spend(self) -> dict:
+        """Per-env daily spend: {"date": ..., "spent_cents": {"demo": N, "prod": N}}.
+        Demo practice orders must not consume the real-money daily budget."""
         try:
             with open(self.spend_file) as f:
                 data = json.load(f)
         except (OSError, ValueError):
             data = {}
-        if data.get("date") != self._today():
-            data = {"date": self._today(), "spent_cents": 0}
+        if data.get("date") != self._today() or not isinstance(
+            data.get("spent_cents"), dict
+        ):
+            data = {"date": self._today(), "spent_cents": {}}
         return data
 
     def daily_spent_cents(self) -> int:
-        return self._load_spend()["spent_cents"]
+        return self._load_spend()["spent_cents"].get(self.config.env, 0)
 
     def record_spend(self, cents: int) -> None:
         data = self._load_spend()
-        data["spent_cents"] += cents
+        env = self.config.env
+        data["spent_cents"][env] = data["spent_cents"].get(env, 0) + cents
         with open(self.spend_file, "w") as f:
             json.dump(data, f)
 
